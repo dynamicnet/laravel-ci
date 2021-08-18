@@ -1,3 +1,4 @@
+#!/usr/local/bin/php
 <?php
 
 foreach ($_ENV as $name => $value) {
@@ -9,6 +10,10 @@ foreach ($_ENV as $name => $value) {
 
     // escape double quote in value
     $value = str_replace('"', '\"', $value);
+    $name = str_replace('DOTENV_', '', $name);
 
     echo "{$name}=\"{$value}\"\n";
 }
+
+// Set a placeholder for the app key generated later with artisan
+echo "APP_KEY=\n";
