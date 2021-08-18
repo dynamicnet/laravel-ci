@@ -13,6 +13,7 @@ RUN rm -rf /tmp/* \
     /var/tmp/*
 
 COPY scripts/ /scripts/
+RUN chmod +x /scripts/*
 
 USER php
 WORKDIR /var/www/html
