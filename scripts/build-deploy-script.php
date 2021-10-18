@@ -40,7 +40,6 @@ if (! isset($_ENV["DEPLOY_CHOWN_USER"])) {
 }
 
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} key:generate\"\n";
+echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} storage:link\"\n";
+echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} route:cache\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} migrate\"\n";
-
-#ssh -ttq root@192.168.0.60 "docker exec PHP74 php /var/www/html/p/pierre-fabre.dev/library/www/artisan route:cache"
-#ssh root@192.168.0.60 "docker exec PHP74 php /var/www/html/p/pierre-fabre.dev/library/www/artisan storage:link"
