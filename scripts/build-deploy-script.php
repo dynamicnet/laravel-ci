@@ -35,11 +35,14 @@ echo "rsync -auz -e \"ssh\" --delete --exclude 'storage/*' --exclude '.git' ./ {
 // Synchro de storage sans le flag --delete
 echo "rsync -auz -e \"ssh\" ./storage/ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}/storage\n";
 
-if (! isset($_ENV["DEPLOY_CHOWN_USER"])) {
-    echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"chown -R {$_ENV["DEPLOY_CHOWN_USER"]}:{$_ENV["DEPLOY_CHOWN_GROUP"]} {$_ENV["DEPLOY_DIR"]}\"\n";
+$DEPLOY_CHOWN_USER = $_ENV["DEPLOY_CHOWN_USER"] ?? "";
+$DEPLOY_CHOWN_GROUP = $_ENV["DEPLOY_CHOWN_GROUP"] ?? "";
+
+if ($DEPLOY_CHOWN_USER || $DEPLOY_CHOWN_GROUP) {
+    echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"chown -R {$DEPLOY_CHOWN_USER}:{$DEPLOY_CHOWN_GROUP} {$_ENV["DEPLOY_DIR"]}\"\n";
 }
 
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} key:generate\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} storage:link\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} route:cache\"\n";
-echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} migrate\"\n";
+echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} migrate --force --no-interaction\"\n";
