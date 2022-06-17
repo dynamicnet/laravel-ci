@@ -21,7 +21,7 @@ foreach ($_ENV as $name => $value) {
 }
 
 // Sort by keys for a better readability of the resulting .env file
-ksort($fruits);
+ksort($extracted_env);
 
 foreach ($extracted_env as $name => $value) {
     // escape double quote in value
