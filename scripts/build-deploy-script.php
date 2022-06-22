@@ -42,6 +42,18 @@ if ($DEPLOY_CHOWN_USER || $DEPLOY_CHOWN_GROUP) {
     echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"chown -R {$DEPLOY_CHOWN_USER}:{$DEPLOY_CHOWN_GROUP} {$_ENV["DEPLOY_DIR"]}\"\n";
 }
 
+$DEPLOY_CHMOD_DIR = $_ENV["DEPLOY_CHMOD_DIR"] ?? "";
+
+if ($DEPLOY_CHMOD_DIR) {
+    echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"find {$_ENV["DEPLOY_DIR"]} -type d -exec chmod {$DEPLOY_CHMOD_DIR} {} \;\"\n";
+}
+
+$DEPLOY_CHMOD_FILE = $_ENV["DEPLOY_CHMOD_FILE"] ?? "";
+
+if ($DEPLOY_CHMOD_FILE) {
+    echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"find {$_ENV["DEPLOY_DIR"]} -type f -exec chmod {$DEPLOY_CHMOD_FILE} {} \;\"\n";
+}
+
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} key:generate\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} storage:link\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} route:cache\"\n";
