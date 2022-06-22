@@ -11,6 +11,8 @@
  * DEPLOY_CHOWN_USER = www-data (user owner of the deployed files)
  * DEPLOY_CHOWN_GROUP = www-data (group owner of the deployed files)
  * DEPLOY_ARTISAN_PATH = /var/www/html/p/pierre-fabre.dev/library/www/artisan (path artisan sur l'hote (en kwdev dans le container))
+ * DEPLOY_CHMOD_DIR = 755
+ * DEPLOY_CHMOD_FILE = 644
  */
 
 
@@ -30,10 +32,10 @@ echo 'ssh-add ~/.ssh/id_rsa'."\n";
 
 // On lance un rsync qui va supprimer les fichiers sur la destination si il ne sont pas présents sur la source
 // on exclus donc "storage" pour ne pas supprimer tous les fichiers sur l'env de destination
-echo "rsync -az -e \"ssh\" --delete --exclude 'storage/*' --exclude '.git' ./ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}\n";
+echo "rsync --compress --delete --times -e \"ssh\" --delete --exclude 'storage/*' --exclude '.git' ./ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}\n";
 
 // Synchro de storage sans le flag --delete
-echo "rsync -az -e \"ssh\" ./storage/ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}/storage\n";
+echo "rsync --compress --delete --times -e \"ssh\" ./storage/ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}/storage\n";
 
 $DEPLOY_CHOWN_USER = $_ENV["DEPLOY_CHOWN_USER"] ?? "";
 $DEPLOY_CHOWN_GROUP = $_ENV["DEPLOY_CHOWN_GROUP"] ?? "";
