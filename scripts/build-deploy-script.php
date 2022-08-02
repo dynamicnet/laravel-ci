@@ -32,10 +32,10 @@ echo 'ssh-add ~/.ssh/id_rsa'."\n";
 
 // On lance un rsync qui va supprimer les fichiers sur la destination si il ne sont pas présents sur la source
 // on exclus donc "storage" pour ne pas supprimer tous les fichiers sur l'env de destination
-echo "rsync --recursive --compress --delete --times -e \"ssh\" --delete --exclude 'storage/*' --exclude '.git' ./ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}\n";
+echo "rsync --recursive --compress --delete --times -e \"ssh\" --exclude 'storage/*' --exclude '.git' ./ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}\n";
 
 // Synchro de storage sans le flag --delete
-echo "rsync --recursive --compress --delete --times -e \"ssh\" ./storage/ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}/storage\n";
+echo "rsync --recursive --compress --times -e \"ssh\" ./storage/ {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]}:{$_ENV["DEPLOY_DIR"]}/storage\n";
 
 $DEPLOY_CHOWN_USER = $_ENV["DEPLOY_CHOWN_USER"] ?? "";
 $DEPLOY_CHOWN_GROUP = $_ENV["DEPLOY_CHOWN_GROUP"] ?? "";
