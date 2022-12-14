@@ -1,4 +1,4 @@
-FROM edbizarro/gitlab-ci-pipeline-php:7.4-alpine
+FROM edbizarro/gitlab-ci-pipeline-php:8.0-alpine
 
 WORKDIR /tmp
 USER root
