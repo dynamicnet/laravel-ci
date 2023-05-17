@@ -65,4 +65,6 @@ $RUN_MIGRATION = ! isset($_ENV["DO_NOT_RUN_MIGRATION"]);
 
 if ($RUN_MIGRATION) {
     echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} migrate --force --no-interaction\"\n";
+} else {
+    echo "echo '\033[38;5;226mSkip migrations (DO_NOT_RUN_MIGRATION)\033[0m'\n";
 }
