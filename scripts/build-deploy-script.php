@@ -56,7 +56,13 @@ if ($DEPLOY_CHMOD_FILE) {
     echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"find {$_ENV["DEPLOY_DIR"]} -type f -exec chmod {$DEPLOY_CHMOD_FILE} {} \;\"\n";
 }
 
-echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} key:generate\"\n";
+$APP_KEY = $_ENV["DOTENV_APP_KEY"] ?? "";
+if ("" == $APP_KEY) {
+    echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} key:generate\"\n";
+} else {
+    echo "echo '\033[38;5;226mAn APP_KEY is given in the CI/CD env var, using it \(and dont generate a new one\)\033[0m'\n";
+}
+
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} storage:link\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} route:cache\"\n";
 echo "ssh -ttq {$_ENV["DEPLOY_USER"]}@{$_ENV["DEPLOY_TARGET_HOST"]} \"{$_ENV["DEPLOY_HOST_PHP_PATH"]} {$_ENV["DEPLOY_ARTISAN_PATH"]} view:cache\"\n";

@@ -24,8 +24,19 @@ foreach ($_ENV as $name => $value) {
 ksort($extracted_env);
 
 foreach ($extracted_env as $name => $value) {
-    // escape double quote in value
-    $value = str_replace('"', '\"', $value);
+    if ("APP_KEY" == $name) {
+        // APP_KEY given in the CI/CD can be prefixed with base64:
+        // the value is not enclosed between double quote
+        if (! preg_match("/^base64\:/", $value)) {
+            $value = "base64:{$value}";
+        }
+    } else {
+        // escape double quote in value
+        $value = str_replace('"', '\"', $value);
 
-    echo "{$name}=\"{$value}\"\n";
+        // enclose between double quote
+        $value = "\"{$value}\"";
+    }
+
+    echo "{$name}={$value}\n";
 }
