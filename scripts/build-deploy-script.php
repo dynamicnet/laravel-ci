@@ -23,6 +23,15 @@ if (! isset($_ENV["DEPLOY_PRIVATE_KEY"])) {
     exit(0);
 }
 
+// Sanitize deploy dir
+$DEPLOY_DIR = $_ENV["DEPLOY_DIR"] ?? "";
+$DEPLOY_DIR = realpath($DEPLOY_DIR);
+
+if ("/" == $DEPLOY_DIR) {
+    echo "/!\  Dangerous DEPLOY_DIR  /!\ ".PHP_EOL;
+    exit(1);
+}
+
 echo "mkdir -p ~/.ssh/\n";
 echo 'echo -e "Host '.$_ENV["DEPLOY_TARGET_HOST"].'\n\tStrictHostKeyChecking no\n\tUser '.$_ENV["DEPLOY_USER"].'\n\n" > ~/.ssh/config'."\n";
 echo 'echo -e "'.$_ENV["DEPLOY_PRIVATE_KEY"].'" > ~/.ssh/id_rsa'."\n";
