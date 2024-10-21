@@ -13,6 +13,10 @@ A chaque modification il faut rebuilder l'image et la pousser sur le Docker Hub 
 - docker build -f ./PHP8.1.Dockerfile -t dynamicnet/laravel-ci:8.1 .
 - docker push dynamicnet/laravel-ci:8.1
 
+# PHP 8.2
+- docker build -f ./PHP8.2.Dockerfile -t dynamicnet/laravel-ci:8.2 .
+- docker push dynamicnet/laravel-ci:8.2
+
 
 # Fonctionnement
 
