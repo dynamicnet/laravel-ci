@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.2-cli-alpine3.20
 
 RUN apt-get update && apt-get install -y \
     git \
