@@ -1,6 +1,8 @@
 FROM php:8.2-cli-alpine3.20
 
 RUN apk update && apk add \
+    nodejs \
+    npm \
     rsync \
     git \
     curl \
@@ -20,9 +22,6 @@ RUN rm -rf /tmp/* \
     /usr/share/man/* \
     /var/cache/apk/* \
     /var/tmp/*
-
-COPY --from=node:22.10.0-alpine3.20 /usr/local/bin/node /usr/local/bin/npm
-COPY --from=node:22.10.0-alpine3.20 /usr/lib/libgcc* /usr/lib/libstdc* /usr/lib/* /usr/lib/
 
 COPY scripts/ /scripts/
 RUN chmod +x /scripts/*
