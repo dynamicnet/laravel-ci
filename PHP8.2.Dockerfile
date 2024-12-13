@@ -3,6 +3,7 @@ FROM php:8.2-cli-alpine3.20
 RUN apk update && apk add \
     nodejs \
     npm \
+    openssh-client-common \
     rsync \
     git \
     curl \
@@ -12,7 +13,7 @@ RUN apk update && apk add \
 
 RUN install-php-extensions curl ftp fileinfo pdo_mysql mysqli openssl pdo_sqlite gd mbstring zip bcmath intl exif
 
-COPY --from=composer:2.8.1 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.8.4 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /tmp
 USER root
