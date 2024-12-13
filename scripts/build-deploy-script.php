@@ -15,11 +15,11 @@
  * DEPLOY_CHMOD_FILE = 644
  */
 
-
-echo "#!/bin/sh\n";
+echo "#!/bin/sh".PHP_EOL;
 
 if (! isset($_ENV["DEPLOY_PRIVATE_KEY"])) {
-    echo "exit 0\n";
+    echo "echo '/!\   Missing an SSH key to deploy, var DEPLOY_PRIVATE_KEY   /!\ '".PHP_EOL;
+    echo "exit 0".PHP_EOL;
     exit(0);
 }
 
