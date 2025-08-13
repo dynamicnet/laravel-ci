@@ -101,5 +101,19 @@ Par ex. `/home/mon-projet.com/sd/recette/www/artisan`
 
 Si la cette variable est présente la commande `artisan:migrate` ne sera pas exécutée lors du déploiement.
 
+## DOTENV_APP_KEY
+
+<table>
+  <tr>
+    <th>Requise</th>
+    <td>Non</td>
+  </tr>
+</table>
+
+Si cette variable est fournie, alors elle sera utilisée pour comme `APP_KEY` lors du déploiement
+et la commande `artisan key:generate` ne sera pas jouée.
+
+Ceci permet de ne pas changer la clé à chaque déploiement, ce qui invaliderai toutes les chaines chiffrées avec `Crypt::encryptString()` et `Crypt::decryptString()` ou les URL signées déjà diffusées.
+
 ## DOTENV_*
 Toutes les variables préfixées par `DOTENV_` seront mises en place dans le fichier `.env`
