@@ -6,7 +6,7 @@ require __DIR__."/functions.php";
 
 if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
     echo "echo '/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ '".PHP_EOL;
-    echo "exit 0".PHP_EOL;
+    echo "exit 1".PHP_EOL;
     exit(1);
 }
 
@@ -14,8 +14,9 @@ if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
 $DEPLOY_DIR = get_env("DEPLOY_DIR", "");
 
 if (!check_safe_dir($DEPLOY_DIR, $error)) {
-    echo "/!\  Dangerous DEPLOY_DIR  /!\ ".PHP_EOL;
-    echo $error.PHP_EOL;
+    echo "echo '/!\  Dangerous DEPLOY_DIR  /!\ '".PHP_EOL;
+    echo "echo 'Error: ".$error."'".PHP_EOL;
+    echo "exit 1".PHP_EOL;
     exit(1);
 }
 
