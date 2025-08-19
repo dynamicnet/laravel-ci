@@ -1,0 +1,98 @@
+<?php
+
+require __DIR__."/vendor/autoload.php";
+
+use Symfony\Component\Filesystem\Path;
+
+function get_env($varname, $default=null) {
+    if (! isset($_ENV[$varname])) {
+        return $default;
+    }
+
+    return $_ENV[$varname];
+}
+
+function cast_bool($value) {
+    if("true" === trim($value)) {
+        return true;
+    }
+
+    if("false" === trim($value)) {
+        return false;
+    }
+
+    return boolval($value);
+}
+
+/**
+ * Check that a directory path is safe
+ *
+ */
+function check_safe_dir($dirname, &$error="") {
+    $DEPLOY_DIR = Path::canonicalize($dirname);
+
+    // Le path résolu ne doit pas être dans la racine
+    if ("/" == $DEPLOY_DIR) {
+        $error = "Must not resolve to /";
+        return false;
+    }
+
+    // Le path ne doit pas contenir de substitution du USER HOME DIR
+    if (str_contains($dirname, "~")) {
+        $error = "Must not contains ~";
+        return false;
+    }
+
+    // Le path ne doit pas contenir de variables
+    if (str_contains($dirname, '$')) {
+        $error = "Must not contains any \$ symbol";
+        return false;
+    }
+
+    // Le path ne doit pas contenir d'expansions
+    if (str_contains($dirname, '*') || str_contains($dirname, '?') || str_contains($dirname, '[')) {
+        $error = "Must not contains * or ? or [";
+        return false;
+    }
+
+    // Le path de doit pas contenir de substitution de commande
+    if (str_contains($dirname, '`')) {
+        $error = "Must not contains any ` symbol";
+        return false;
+    }
+
+    // Le path doit être un chemin absolu
+    if (!Path::isAbsolute($dirname)) {
+        $error = "Must be an absolute path";
+        return false;
+    }
+
+    if(!str_ends_with($dirname, "/")) {
+        $error = "Must end with a /";
+        return false;
+    }
+
+    return true;
+}
+
+if (!function_exists('str_contains')) {
+    /**
+     * Check if substring is contained in string
+     *
+     * @param $haystack
+     * @param $needle
+     *
+     * @return bool
+     */
+    function str_contains($haystack, $needle)
+    {
+        return (strpos($haystack, $needle) !== false);
+    }
+}
+
+if (!function_exists('str_ends_with')) {
+    function str_ends_with(string $haystack, string $needle): bool
+    {
+        return strlen($needle) === 0 || substr($haystack, -strlen($needle)) === $needle;
+    }
+}
