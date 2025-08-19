@@ -109,7 +109,7 @@ if ("" != $SUPERVISOR_PROGRAM_NAME) {
 
     $conf = str_replace($keys, array_values($replacements), get_supervisor_conf_tpl());
 
-    echo "STATUS=`ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"`\n";
+    echo "STATUS=`ssh -tt {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"`\n";
     echo 'echo -e "'.$conf.'" > '.$CONF_FILENAME.''."\n";
     echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo ln -sf ./".$CONF_FILENAME." ".$CONF_DIR."/".$CONF_FILENAME."\"\n";
 
@@ -122,5 +122,5 @@ if ("" != $SUPERVISOR_PROGRAM_NAME) {
 
     // Attend que les process démarrent avant de voir le status
     echo "sleep 5\n";
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"\n";
+    echo "ssh -tt {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"\n";
 }
