@@ -83,3 +83,43 @@ if ($RUN_MIGRATION) {
 } else {
     echo "echo '\033[38;5;226mSkip migrations (DO_NOT_RUN_MIGRATION)\033[0m'\n";
 }
+
+$SUPERVISOR_PROGRAM_NAME = get_env("SUPERVISOR_PROGRAM_NAME");
+$CI_ENVIRONMENT_NAME = get_env("CI_ENVIRONMENT_NAME");
+
+if ("" != $SUPERVISOR_PROGRAM_NAME) {
+    $CONF_FILENAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME.".conf";
+    $PROGRAM_NAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME;
+    $CONF_DIR = get_env("SUPERVISOR_CONFD_DIR", "/etc/supervisor/conf.d");
+
+    $replacements = [
+        "CI_PROJECT_TITLE" => get_env("CI_PROJECT_TITLE"),
+        "CI_PROJECT_URL" => get_env("CI_PROJECT_URL"),
+        "PROGRAM_NAME" => $PROGRAM_NAME,
+        "USER" => $DEPLOY_USER,
+        "NUM_PROCS" => get_env("SUPERVISOR_NUM_PROCS", 2),
+        "LOGFILE" => $DEPLOY_DIR."storage/logs/workers.log",
+        "COMMAND" => $DEPLOY_ARTISAN_PATH." queue:work --sleep=3 --tries=3 --max-time=120",
+        "PHP_EXECUTABLE_PATH" => $DEPLOY_HOST_PHP_PATH,
+    ];
+
+    $keys = array_keys($replacements);
+    $keys = array_map("build_key", $keys);
+
+    $conf = str_replace($keys, array_values($replacements), get_supervisor_conf_tpl());
+
+    echo "STATUS=`ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"`\n";
+    echo 'echo -e "'.$conf.'" > '.$CONF_FILENAME.''."\n";
+    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo ln -sf ./".$CONF_FILENAME." ".$CONF_DIR."/".$CONF_FILENAME."\"\n";
+
+    // Si les workers sont déjà gérés par supervisor on update, sinon on start
+    echo 'if [[ $STATUS == *"no such group"* ]]; then'."\n";
+    echo "\tssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl start ".$PROGRAM_NAME."\"\n";
+    echo "else\n";
+    echo "\tssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl update ".$PROGRAM_NAME."\"\n";
+    echo "fi\n";
+
+    // Attend que les process démarrent avant de voir le status
+    echo "sleep 5\n";
+    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"sudo supervisorctl status ".$PROGRAM_NAME.":*\"\n";
+}
