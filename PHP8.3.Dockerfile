@@ -4,6 +4,7 @@ RUN apk update && apk add \
     nodejs \
     npm \
     openssh-client-common \
+    openssh-client-default \
     rsync \
     git \
     curl \
