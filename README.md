@@ -2,9 +2,14 @@ Ce dépôt contient le code et le Dockerfile qui permettent de générer l'image
 
 A chaque modification il faut rebuilder l'image et la pousser sur le Docker Hub :
 
+# PHP 7.3
+- docker build -f ./PHP7.3.Dockerfile -t dynamicnet/laravel-ci:7.3 .
+- docker push dynamicnet/laravel-ci:7.3
+
 # PHP 7.4
 - docker build -f ./PHP7.4.Dockerfile -t dynamicnet/laravel-ci:7.4 .
 - docker push dynamicnet/laravel-ci:7.4
+
 # PHP 8.0
 - docker build -f ./PHP8.0.Dockerfile -t dynamicnet/laravel-ci:8.0 .
 - docker push dynamicnet/laravel-ci:8.0
