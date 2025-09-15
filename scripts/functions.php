@@ -147,7 +147,7 @@ function build_supervisor_config(&$outputs) {
     $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
     $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
 
-    if ("" != $SUPERVISOR_PROGRAM_NAME) {
+    if ("" == $SUPERVISOR_PROGRAM_NAME) {
         return;
     }
 
