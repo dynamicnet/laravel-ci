@@ -124,3 +124,68 @@ if (!function_exists('str_ends_with')) {
         return strlen($needle) === 0 || substr($haystack, -strlen($needle)) === $needle;
     }
 }
+
+/**
+ * Retourne le chaine de la commande SSH de base configurée avec le
+ * user et le host définis par les variables d'environnement
+ */
+function ssh_cmd($cmd) {
+    $DEPLOY_TARGET_HOST = get_env("DEPLOY_TARGET_HOST");
+    $DEPLOY_USER = get_env("DEPLOY_USER");
+
+    return "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$cmd}\"";
+}
+
+/**
+ * Génére le fichier de config Supervisor si les variables d'envionnement
+ * voulues sont settées
+ */
+function build_supervisor_config(&$outputs) {
+    $SUPERVISOR_PROGRAM_NAME = get_env("SUPERVISOR_PROGRAM_NAME");
+    $CI_ENVIRONMENT_NAME = get_env("CI_ENVIRONMENT_NAME");
+    $DEPLOY_DIR = get_env("DEPLOY_DIR", "");
+    $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
+    $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
+
+    if ("" != $SUPERVISOR_PROGRAM_NAME) {
+        return;
+    }
+
+    $CONF_FILENAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME.".conf";
+    $PROGRAM_NAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME;
+
+
+    $replacements = [
+        "CI_COMMIT_TAG" => get_env("CI_COMMIT_TAG"),
+        "CI_COMMIT_SHORT_SHA" => get_env("CI_COMMIT_SHORT_SHA"),
+        "CI_PROJECT_TITLE" => get_env("CI_PROJECT_TITLE"),
+        "CI_PROJECT_URL" => get_env("CI_PROJECT_URL"),
+        "PROGRAM_NAME" => $PROGRAM_NAME,
+        "USER" => get_env("DEPLOY_USER"),
+        "NUM_PROCS" => get_env("SUPERVISOR_NUM_PROCS", 2),
+        "LOGFILE" => $DEPLOY_DIR."storage/logs/workers.log",
+        "COMMAND" => $DEPLOY_ARTISAN_PATH." queue:work --sleep=3 --tries=3 --max-time=120",
+        "PHP_EXECUTABLE_PATH" => $DEPLOY_HOST_PHP_PATH,
+    ];
+
+    $keys = array_keys($replacements);
+    $keys = array_map("build_key", $keys);
+
+    $conf = str_replace($keys, array_values($replacements), get_supervisor_conf_tpl());
+
+    echo 'echo -e "'.$conf.'" > '.$CONF_FILENAME.''."\n";
+
+    $outputs["SUPERVISOR_CONF_FILENAME"] = $CONF_FILENAME;
+}
+
+function symlink_supervisor_config_file(&$outputs) {
+    if (!isset($outputs["SUPERVISOR_CONF_FILENAME"])) {
+        return;
+    }
+
+    $DEPLOY_DIR = get_env("DEPLOY_DIR", "");
+    $CONF_FILENAME = $outputs["SUPERVISOR_CONF_FILENAME"];
+    $CONF_DIR = get_env("SUPERVISOR_CONFD_DIR", "/etc/supervisor/conf.d");
+
+    echo ssh_cmd("ln -sf ".$DEPLOY_DIR.$CONF_FILENAME." ".$CONF_DIR."/".$CONF_FILENAME).PHP_EOL;
+}

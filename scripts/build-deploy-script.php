@@ -3,6 +3,7 @@
 
 require __DIR__."/vendor/autoload.php";
 require __DIR__."/functions.php";
+$outputs = [];
 
 if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
     echo "echo '/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ '".PHP_EOL;
@@ -43,6 +44,8 @@ echo 'echo -e "Host '.$DEPLOY_TARGET_HOST.'\n\tStrictHostKeyChecking no\n\tUser 
 echo 'echo -e "'.$DEPLOY_PRIVATE_KEY.'" > ~/.ssh/id_rsa'."\n";
 echo 'chmod 0400 ~/.ssh/id_rsa'."\n";
 echo 'ssh-add ~/.ssh/id_rsa'."\n";
+
+build_supervisor_config($outputs);
 
 
 // On lance un rsync qui va supprimer les fichiers sur la destination si il ne sont pas présents sur la source
@@ -85,37 +88,15 @@ if ($RUN_MIGRATION) {
     echo "echo '\033[38;5;226mSkip migrations (DO_NOT_RUN_MIGRATION)\033[0m'\n";
 }
 
+symlink_supervisor_config_file($outputs);
+
 $SUPERVISOR_PROGRAM_NAME = get_env("SUPERVISOR_PROGRAM_NAME");
-$CI_ENVIRONMENT_NAME = get_env("CI_ENVIRONMENT_NAME");
 
 if ("" != $SUPERVISOR_PROGRAM_NAME) {
-    $CONF_FILENAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME.".conf";
-    $PROGRAM_NAME = $SUPERVISOR_PROGRAM_NAME."_".$CI_ENVIRONMENT_NAME;
-    $CONF_DIR = get_env("SUPERVISOR_CONFD_DIR", "/etc/supervisor/conf.d");
-
-    $replacements = [
-        "CI_COMMIT_TAG" => get_env("CI_COMMIT_TAG"),
-        "CI_COMMIT_SHORT_SHA" => get_env("CI_COMMIT_SHORT_SHA"),
-        "CI_PROJECT_TITLE" => get_env("CI_PROJECT_TITLE"),
-        "CI_PROJECT_URL" => get_env("CI_PROJECT_URL"),
-        "PROGRAM_NAME" => $PROGRAM_NAME,
-        "USER" => $DEPLOY_USER,
-        "NUM_PROCS" => get_env("SUPERVISOR_NUM_PROCS", 2),
-        "LOGFILE" => $DEPLOY_DIR."storage/logs/workers.log",
-        "COMMAND" => $DEPLOY_ARTISAN_PATH." queue:work --sleep=3 --tries=3 --max-time=120",
-        "PHP_EXECUTABLE_PATH" => $DEPLOY_HOST_PHP_PATH,
-    ];
-
-    $keys = array_keys($replacements);
-    $keys = array_map("build_key", $keys);
-
-    $conf = str_replace($keys, array_values($replacements), get_supervisor_conf_tpl());
-
     echo "set +e\n";
     echo "STATUS=`ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"supervisorctl status ".$PROGRAM_NAME.":*\"`\n";
     echo "set -e\n";
-    echo 'echo -e "'.$conf.'" > '.$CONF_FILENAME.''."\n";
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"ln -sf ".$DEPLOY_DIR.$CONF_FILENAME." ".$CONF_DIR."/".$CONF_FILENAME."\"\n";
+
 
     // Si les workers sont déjà gérés par supervisor on update, sinon on start
     echo 'if [[ $STATUS == *"no such group"* ]]; then'."\n";
