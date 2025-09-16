@@ -101,6 +101,48 @@ Par ex. `/home/mon-projet.com/sd/recette/www/artisan`
 
 Si la cette variable est présente la commande `artisan:migrate` ne sera pas exécutée lors du déploiement.
 
+## SUPERVISOR_CONFD_DIR
+<table>
+  <tr>
+    <th>Requise</th>
+    <td>Non</td>
+  </tr>
+  <tr>
+    <th>Défaut</th>
+    <td>/etc/supervisor/conf.d</td>
+  </tr>
+</table>
+Dossier de configuration Supervisor dans lequel les configs seront linkées
+
+## SUPERVISOR_PROGRAM_NAME
+<table>
+  <tr>
+    <th>Requise</th>
+    <td>Non</td>
+  </tr>
+</table>
+Nom de base du programme supervisor, le nom de l'environnement sera automatiquement ajouté en suffixe.
+
+Ce nom doit être suffisamment unique pour ne pas interférer avec d'autres noms de programme déjà gérés par Supervisor.\
+Utiliser le nom du projet semble être une bonne option.
+
+Par exemple si la valeur de cette variable est définie à `mon-projet-laravel`, le nom du programme dans Supervisor sera `mon-projet-laravel_INTG`
+
+C'est la présence ou l'absence de valeur dans cette variable qui définira si le déploiement prend en charge la configuration et le lancement des workers ou pas.
+
+## SUPERVISOR_NUM_PROCS
+<table>
+  <tr>
+    <th>Requise</th>
+    <td>Non</td>
+  </tr>
+  <tr>
+    <th>Défaut</th>
+    <td>2</td>
+  </tr>
+</table>
+Le superviseur lancera autant d'instances de ce programme que le nombre indiqué.
+
 ## DOTENV_APP_KEY
 
 <table>
