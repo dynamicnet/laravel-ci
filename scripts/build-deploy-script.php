@@ -89,23 +89,4 @@ if ($RUN_MIGRATION) {
 }
 
 symlink_supervisor_config_file($outputs);
-
-$SUPERVISOR_PROGRAM_NAME = get_env("SUPERVISOR_PROGRAM_NAME");
-
-if ("" != $SUPERVISOR_PROGRAM_NAME) {
-    echo "set +e\n";
-    echo "STATUS=`ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"supervisorctl status ".$PROGRAM_NAME.":*\"`\n";
-    echo "set -e\n";
-
-
-    // Si les workers sont déjà gérés par supervisor on update, sinon on start
-    echo 'if [[ $STATUS == *"no such group"* ]]; then'."\n";
-    echo "\tssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"supervisorctl start ".$PROGRAM_NAME."\"\n";
-    echo "else\n";
-    echo "\tssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"supervisorctl update ".$PROGRAM_NAME."\"\n";
-    echo "fi\n";
-
-    // Attend que les process démarrent avant de voir le status
-    echo "sleep 5\n";
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"supervisorctl status ".$PROGRAM_NAME.":*\"\n";
-}
+update_supervisor_processes($outputs);
