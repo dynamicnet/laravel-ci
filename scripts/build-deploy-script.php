@@ -90,3 +90,5 @@ if ($RUN_MIGRATION) {
 
 symlink_supervisor_config_file($outputs);
 update_supervisor_processes($outputs);
+
+set_crontab($outputs);

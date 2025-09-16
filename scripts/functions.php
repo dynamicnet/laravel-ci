@@ -237,3 +237,10 @@ function update_supervisor_processes(&$outputs)
     echo 'echo "### SUPERVISOR STATUS"', PHP_EOL;
     echo 'echo "$SUPERVISOR_STATUS"', PHP_EOL;
 }
+
+/**
+ * Met en place la tache cron pour le projet si nécessaire
+ */
+function set_crontab($outputs) {
+
+}
