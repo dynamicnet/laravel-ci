@@ -36,7 +36,7 @@ build_supervisor_config($outputs);
 
 // On lance un rsync qui va supprimer les fichiers sur la destination si il ne sont pas présents sur la source
 // on exclus donc "storage" pour ne pas supprimer tous les fichiers sur l'env de destination
-echo "rsync --recursive --compress --delete --times -e \"ssh\" --exclude 'storage/*' --exclude '.git' --exclude '/node_modules' ./ {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST}:{$DEPLOY_DIR}\n";
+echo "rsync --recursive --compress --delete --times -e \"ssh\" --exclude 'storage/*' --exclude '.git' --exclude 'node_modules' ./ {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST}:{$DEPLOY_DIR}\n";
 
 // Synchro de storage sans le flag --delete
 echo "rsync --recursive --compress --times -e \"ssh\" ./storage/ {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST}:{$DEPLOY_DIR}storage\n";
