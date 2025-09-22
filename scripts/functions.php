@@ -36,51 +36,51 @@ function check_safe_dir(&$outputs)
 
     $DEPLOY_DIR = get_env("DEPLOY_DIR", "");
 
-    if (!$DEPLOY_DIR) {
+    if ($isSafe && !$DEPLOY_DIR) {
         $error = "Must not be an empty string";
+        $isSafe = false;
+    }
+
+    if ($isSafe && !str_ends_with($DEPLOY_DIR, "/")) {
+        $error = "Must end with a /";
         $isSafe = false;
     }
 
     $DEPLOY_DIR = Path::canonicalize($DEPLOY_DIR);
 
     // Le path résolu ne doit pas être dans la racine
-    if ("/" == $DEPLOY_DIR) {
+    if ($isSafe && "/" == $DEPLOY_DIR) {
         $error = "Must not resolve to /";
         $isSafe = false;
     }
 
     // Le path ne doit pas contenir de substitution du USER HOME DIR
-    if (str_contains($DEPLOY_DIR, "~")) {
+    if ($isSafe && str_contains($DEPLOY_DIR, "~")) {
         $error = "Must not contains ~";
         $isSafe = false;
     }
 
     // Le path ne doit pas contenir de variables
-    if (str_contains($DEPLOY_DIR, '$')) {
+    if ($isSafe && str_contains($DEPLOY_DIR, '$')) {
         $error = "Must not contains any \$ symbol";
         $isSafe = false;
     }
 
     // Le path ne doit pas contenir d'expansions
-    if (str_contains($DEPLOY_DIR, '*') || str_contains($DEPLOY_DIR, '?') || str_contains($DEPLOY_DIR, '[')) {
+    if ($isSafe && (str_contains($DEPLOY_DIR, '*') || str_contains($DEPLOY_DIR, '?') || str_contains($DEPLOY_DIR, '['))) {
         $error = "Must not contains * or ? or [";
         $isSafe = false;
     }
 
     // Le path de doit pas contenir de substitution de commande
-    if (str_contains($DEPLOY_DIR, '`')) {
+    if ($isSafe && str_contains($DEPLOY_DIR, '`')) {
         $error = "Must not contains any ` symbol";
         $isSafe = false;
     }
 
     // Le path doit être un chemin absolu
-    if (!Path::isAbsolute($DEPLOY_DIR)) {
+    if ($isSafe && !Path::isAbsolute($DEPLOY_DIR)) {
         $error = "Must be an absolute path";
-        $isSafe = false;
-    }
-
-    if (!str_ends_with($DEPLOY_DIR, "/")) {
-        $error = "Must end with a /";
         $isSafe = false;
     }
 
