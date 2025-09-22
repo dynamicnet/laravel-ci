@@ -85,8 +85,8 @@ function check_safe_dir(&$outputs)
     }
 
     if (!$isSafe) {
-        echo "/!\  Dangerous DEPLOY_DIR  /!\ ", PHP_EOL;
-        echo "\tError: ", $error, PHP_EOL;
+        echo_build_error("/!\  Dangerous DEPLOY_DIR  /!\ ");
+        echo_build_error("\tError: ", $error);
 
         exit(1);
     }
@@ -282,9 +282,17 @@ function apply_chmod(&$outputs) {
 
 function check_private_key(&$outputs) {
     if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
-        echo "/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ ", PHP_EOL;
+        echo_build_error("/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ ");
         exit(1);
     }
+}
+
+/**
+ * Affiche une erreur sur STDERR, ce qui permet de la voir dans la console CI/CD
+ * l'afficher sur STDOUT est inutile parce que le sortie redirigée vers un fichier
+ */
+function echo_build_error($msg) {
+    fwrite(STDERR, $msg.PHP_EOL);
 }
 
 /**
