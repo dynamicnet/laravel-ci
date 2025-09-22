@@ -30,52 +30,68 @@ function cast_bool($value)
  * Check that a directory path is safe
  *
  */
-function check_safe_dir($dirname, &$error = "")
+function check_safe_dir(&$outputs)
 {
-    $DEPLOY_DIR = Path::canonicalize($dirname);
+    $isSafe = true;
+
+    $DEPLOY_DIR = get_env("DEPLOY_DIR", "");
+
+    if (!$DEPLOY_DIR) {
+        $error = "Must not be an empty string";
+        $isSafe = false;
+    }
+
+    $DEPLOY_DIR = Path::canonicalize($DEPLOY_DIR);
 
     // Le path résolu ne doit pas être dans la racine
     if ("/" == $DEPLOY_DIR) {
         $error = "Must not resolve to /";
-        return false;
+        $isSafe = false;
     }
 
     // Le path ne doit pas contenir de substitution du USER HOME DIR
-    if (str_contains($dirname, "~")) {
+    if (str_contains($DEPLOY_DIR, "~")) {
         $error = "Must not contains ~";
-        return false;
+        $isSafe = false;
     }
 
     // Le path ne doit pas contenir de variables
-    if (str_contains($dirname, '$')) {
+    if (str_contains($DEPLOY_DIR, '$')) {
         $error = "Must not contains any \$ symbol";
-        return false;
+        $isSafe = false;
     }
 
     // Le path ne doit pas contenir d'expansions
-    if (str_contains($dirname, '*') || str_contains($dirname, '?') || str_contains($dirname, '[')) {
+    if (str_contains($DEPLOY_DIR, '*') || str_contains($DEPLOY_DIR, '?') || str_contains($DEPLOY_DIR, '[')) {
         $error = "Must not contains * or ? or [";
-        return false;
+        $isSafe = false;
     }
 
     // Le path de doit pas contenir de substitution de commande
-    if (str_contains($dirname, '`')) {
+    if (str_contains($DEPLOY_DIR, '`')) {
         $error = "Must not contains any ` symbol";
-        return false;
+        $isSafe = false;
     }
 
     // Le path doit être un chemin absolu
-    if (!Path::isAbsolute($dirname)) {
+    if (!Path::isAbsolute($DEPLOY_DIR)) {
         $error = "Must be an absolute path";
-        return false;
+        $isSafe = false;
     }
 
-    if (!str_ends_with($dirname, "/")) {
+    if (!str_ends_with($DEPLOY_DIR, "/")) {
         $error = "Must end with a /";
-        return false;
+        $isSafe = false;
     }
 
-    return true;
+    if (!$isSafe) {
+        echo "/!\  Dangerous DEPLOY_DIR  /!\ ", PHP_EOL;
+        echo "\tError: ", $error, PHP_EOL;
+
+        exit(1);
+    }
+
+    $outputs["DEPLOY_DIR"] = $DEPLOY_DIR;
 }
 
 function get_supervisor_conf_tpl()
@@ -236,6 +252,39 @@ function update_supervisor_processes(&$outputs)
 
     echo 'echo "### SUPERVISOR STATUS"', PHP_EOL;
     echo 'echo "$SUPERVISOR_STATUS"', PHP_EOL;
+}
+
+function apply_chown(&$outputs) {
+    $DEPLOY_CHOWN_USER = get_env("DEPLOY_CHOWN_USER");
+    $DEPLOY_CHOWN_GROUP = get_env("DEPLOY_CHOWN_GROUP");
+
+    if ($DEPLOY_CHOWN_USER) {
+        echo ssh_cmd("chown -R {$DEPLOY_CHOWN_USER} {$outputs['DEPLOY_DIR']}"), PHP_EOL;
+    }
+
+    if ($DEPLOY_CHOWN_GROUP) {
+        echo ssh_cmd("chown -R :{$DEPLOY_CHOWN_GROUP} {$outputs['DEPLOY_DIR']}"), PHP_EOL;
+    }
+}
+
+function apply_chmod(&$outputs) {
+    $DEPLOY_CHMOD_DIR = get_env("DEPLOY_CHMOD_DIR");
+    $DEPLOY_CHMOD_FILE = get_env("DEPLOY_CHMOD_FILE");
+
+    if ($DEPLOY_CHMOD_DIR) {
+        echo ssh_cmd("find {$outputs['DEPLOY_DIR']} -type d -exec chmod {$DEPLOY_CHMOD_DIR} {} \;"), PHP_EOL;
+    }
+
+    if ($DEPLOY_CHMOD_FILE) {
+        echo ssh_cmd("find {$outputs['DEPLOY_DIR']} -type f -exec chmod {$DEPLOY_CHMOD_FILE} {} \;"), PHP_EOL;
+    }
+}
+
+function check_private_key(&$outputs) {
+    if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
+        echo "/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ ", PHP_EOL;
+        exit(1);
+    }
 }
 
 /**

@@ -5,31 +5,17 @@ require __DIR__."/vendor/autoload.php";
 require __DIR__."/functions.php";
 $outputs = [];
 
-if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
-    echo "echo '/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ '".PHP_EOL;
-    echo "exit 1".PHP_EOL;
-    exit(1);
-}
+check_private_key($outputs);
 
 // Sanitize deploy dir
-$DEPLOY_DIR = get_env("DEPLOY_DIR", "");
+check_safe_dir($outputs);
 
-if (!check_safe_dir($DEPLOY_DIR, $error)) {
-    echo "echo '/!\  Dangerous DEPLOY_DIR  /!\ '".PHP_EOL;
-    echo "echo 'Error: ".$error."'".PHP_EOL;
-    echo "exit 1".PHP_EOL;
-    exit(1);
-}
-
+$DEPLOY_DIR = $outputs["DEPLOY_DIR"];
 
 // Extract VAR
 $DEPLOY_TARGET_HOST = get_env("DEPLOY_TARGET_HOST");
 $DEPLOY_USER = get_env("DEPLOY_USER");
 $DEPLOY_PRIVATE_KEY = get_env("DEPLOY_PRIVATE_KEY");
-$DEPLOY_CHOWN_USER = get_env("DEPLOY_CHOWN_USER");
-$DEPLOY_CHOWN_GROUP = get_env("DEPLOY_CHOWN_GROUP");
-$DEPLOY_CHMOD_DIR = get_env("DEPLOY_CHMOD_DIR");
-$DEPLOY_CHMOD_FILE = get_env("DEPLOY_CHMOD_FILE");
 $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
 $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
 $APP_KEY = get_env("DOTENV_APP_KEY");
@@ -56,21 +42,8 @@ echo "rsync --recursive --compress --delete --times -e \"ssh\" --exclude 'storag
 echo "rsync --recursive --compress --times -e \"ssh\" ./storage/ {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST}:{$DEPLOY_DIR}storage\n";
 
 
-
-if ($DEPLOY_CHOWN_USER) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"chown -R {$DEPLOY_CHOWN_USER} {$DEPLOY_DIR}\"\n";
-}
-if ($DEPLOY_CHOWN_GROUP) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"chown -R :{$DEPLOY_CHOWN_GROUP} {$DEPLOY_DIR}\"\n";
-}
-
-if ($DEPLOY_CHMOD_DIR) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"find {$DEPLOY_DIR} -type d -exec chmod {$DEPLOY_CHMOD_DIR} {} \;\"\n";
-}
-
-if ($DEPLOY_CHMOD_FILE) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"find {$DEPLOY_DIR} -type f -exec chmod {$DEPLOY_CHMOD_FILE} {} \;\"\n";
-}
+apply_chown($outputs);
+apply_chmod($outputs);
 
 if ("" == $APP_KEY) {
     echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} key:generate\"\n";
