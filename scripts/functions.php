@@ -291,8 +291,10 @@ function check_private_key(&$outputs) {
  * Affiche une erreur sur STDERR, ce qui permet de la voir dans la console CI/CD
  * l'afficher sur STDOUT est inutile parce que le sortie redirigée vers un fichier
  */
-function echo_build_error($msg) {
-    fwrite(STDERR, $msg.PHP_EOL);
+function echo_build_error(...$msgs) {
+    $msgs[] = PHP_EOL;
+    $msg = implode("", $msgs);
+    fwrite(STDERR, $msg);
 }
 
 /**
