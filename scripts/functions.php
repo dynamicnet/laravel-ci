@@ -41,14 +41,14 @@ function check_safe_dir(&$outputs)
         $isSafe = false;
     }
 
-    if ($isSafe && !str_ends_with($DEPLOY_DIR, "/")) {
-        $error = "Must end with a /";
-        $isSafe = false;
-    }
-
     $DEPLOY_DIR = Path::canonicalize($DEPLOY_DIR);
 
-    // Le path résolu ne doit pas être dans la racine
+    // Ajoute le / final si il est manquant
+    if (!str_ends_with($DEPLOY_DIR, "/")) {
+        $DEPLOY_DIR = $DEPLOY_DIR."/";
+    }
+
+    // Le path résolu ne doit pas être la racine
     if ($isSafe && "/" == $DEPLOY_DIR) {
         $error = "Must not resolve to /";
         $isSafe = false;
