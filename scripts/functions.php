@@ -303,3 +303,41 @@ function echo_build_error(...$msgs) {
 function set_crontab($outputs) {
 
 }
+
+/**
+ * Récupère la version de Laravel utilisée dans le projet
+ */
+function get_laravel_version() {
+    $ciProjectDir = get_env("CI_PROJECT_DIR");
+    $composerLockPath = $ciProjectDir . "/composer.lock";
+
+    if (!file_exists($composerLockPath)) {
+        echo_build_error("\tError: composer.lock not found, cannot determine Laravel version");
+        exit(1);
+    }
+
+    $composerLockContent = file_get_contents($composerLockPath);
+    $composerLockData = json_decode($composerLockContent, true);
+
+    foreach ($composerLockData['packages'] as $package) {
+        if ($package['name'] === 'laravel/framework') {
+            return str_replace('v', '', $package['version']);
+        }
+    }
+
+    echo_build_error("\tError: composer.lock not found, cannot determine Laravel version");
+    exit(1);
+}
+
+function laravel_optimize() {
+    $version = get_laravel_version();
+    $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
+
+    if (version_compare($version, '9.0.0', '<')) {
+        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} storage:link"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} route:cache"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} view:cache"), PHP_EOL;
+    } else {
+        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} optimize"), PHP_EOL;
+    }
+}
