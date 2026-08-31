@@ -18,9 +18,6 @@ $DEPLOY_USER = get_env("DEPLOY_USER");
 $DEPLOY_PRIVATE_KEY = get_env("DEPLOY_PRIVATE_KEY");
 $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
 $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
-$APP_KEY = get_env("DOTENV_APP_KEY");
-$RUN_MIGRATION = !cast_bool(get_env("DO_NOT_RUN_MIGRATION", false));
-
 
 // Génère le script de déploiement
 echo "#!/bin/sh".PHP_EOL;
@@ -45,19 +42,9 @@ echo "rsync --recursive --compress --times -e \"ssh\" ./storage/ {$DEPLOY_USER}@
 apply_chown($outputs);
 apply_chmod($outputs);
 
-if ("" == $APP_KEY) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} key:generate --force\"\n";
-} else {
-    echo "echo '\033[38;5;226mAn APP_KEY is given in the CI/CD env var, using it \(and dont generate a new one\)\033[0m'\n";
-}
-
+laravel_key_generate();
 laravel_optimize();
-
-if ($RUN_MIGRATION) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} migrate --force --no-interaction\"\n";
-} else {
-    echo "echo '\033[38;5;226mSkip migrations (DO_NOT_RUN_MIGRATION)\033[0m'\n";
-}
+laravel_migrate();
 
 symlink_supervisor_config_file($outputs);
 update_supervisor_processes($outputs);

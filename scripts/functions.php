@@ -45,7 +45,7 @@ function check_safe_dir(&$outputs)
 
     // Ajoute le / final si il est manquant
     if (!str_ends_with($DEPLOY_DIR, "/")) {
-        $DEPLOY_DIR = $DEPLOY_DIR."/";
+        $DEPLOY_DIR = $DEPLOY_DIR . "/";
     }
 
     // Le path résolu ne doit pas être la racine
@@ -254,7 +254,8 @@ function update_supervisor_processes(&$outputs)
     echo 'echo "$SUPERVISOR_STATUS"', PHP_EOL;
 }
 
-function apply_chown(&$outputs) {
+function apply_chown(&$outputs)
+{
     $DEPLOY_CHOWN_USER = get_env("DEPLOY_CHOWN_USER");
     $DEPLOY_CHOWN_GROUP = get_env("DEPLOY_CHOWN_GROUP");
 
@@ -267,7 +268,8 @@ function apply_chown(&$outputs) {
     }
 }
 
-function apply_chmod(&$outputs) {
+function apply_chmod(&$outputs)
+{
     $DEPLOY_CHMOD_DIR = get_env("DEPLOY_CHMOD_DIR");
     $DEPLOY_CHMOD_FILE = get_env("DEPLOY_CHMOD_FILE");
 
@@ -280,7 +282,8 @@ function apply_chmod(&$outputs) {
     }
 }
 
-function check_private_key(&$outputs) {
+function check_private_key(&$outputs)
+{
     if (false == get_env("DEPLOY_PRIVATE_KEY", false)) {
         echo_build_error("/!\ Missing an SSH key to deploy, set DEPLOY_PRIVATE_KEY env var /!\ ");
         exit(1);
@@ -291,7 +294,8 @@ function check_private_key(&$outputs) {
  * Affiche une erreur sur STDERR, ce qui permet de la voir dans la console CI/CD
  * l'afficher sur STDOUT est inutile parce que le sortie redirigée vers un fichier
  */
-function echo_build_error(...$msgs) {
+function echo_build_error(...$msgs)
+{
     $msgs[] = PHP_EOL;
     $msg = implode("", $msgs);
     fwrite(STDERR, $msg);
@@ -300,14 +304,13 @@ function echo_build_error(...$msgs) {
 /**
  * Met en place la tache cron pour le projet si nécessaire
  */
-function set_crontab($outputs) {
-
-}
+function set_crontab($outputs) {}
 
 /**
  * Récupère la version de Laravel utilisée dans le projet
  */
-function get_laravel_version() {
+function get_laravel_version()
+{
     $ciProjectDir = get_env("CI_PROJECT_DIR");
     $composerLockPath = $ciProjectDir . "/composer.lock";
 
@@ -329,7 +332,8 @@ function get_laravel_version() {
     exit(1);
 }
 
-function laravel_optimize() {
+function laravel_optimize()
+{
     $version = get_laravel_version();
     $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
     $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
@@ -341,4 +345,33 @@ function laravel_optimize() {
     } else {
         echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} optimize"), PHP_EOL;
     }
+}
+
+function laravel_key_generate()
+{
+    $APP_KEY = get_env("DOTENV_APP_KEY");
+    $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
+    $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
+
+    // Si la clé n'est pas fournie dans les variables d'environnement, on génère une nouvelle clé
+    if ("" == $APP_KEY) {
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} key:generate --force"), PHP_EOL;
+        return true;
+    }
+
+    echo "echo '\033[38;5;226mAn APP_KEY is given in the CI/CD env var, using it \(and dont generate a new one\)\033[0m'\n";
+}
+
+function laravel_migrate()
+{
+    $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
+    $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
+    $RUN_MIGRATION = !cast_bool(get_env("DO_NOT_RUN_MIGRATION", false));
+
+    if ($RUN_MIGRATION) {
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} migrate --force --no-interaction"), PHP_EOL;
+        return true;
+    }
+
+    echo "echo '\033[38;5;226mSkip migrations (DO_NOT_RUN_MIGRATION)\033[0m'\n";
 }
