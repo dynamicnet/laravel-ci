@@ -332,12 +332,13 @@ function get_laravel_version() {
 function laravel_optimize() {
     $version = get_laravel_version();
     $DEPLOY_ARTISAN_PATH = get_env("DEPLOY_ARTISAN_PATH");
+    $DEPLOY_HOST_PHP_PATH = get_env("DEPLOY_HOST_PHP_PATH");
 
     if (version_compare($version, '9.0.0', '<')) {
-        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} storage:link"), PHP_EOL;
-        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} route:cache"), PHP_EOL;
-        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} view:cache"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} storage:link"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} route:cache"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} view:cache"), PHP_EOL;
     } else {
-        echo ssh_cmd("{$DEPLOY_ARTISAN_PATH} optimize"), PHP_EOL;
+        echo ssh_cmd("{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} optimize"), PHP_EOL;
     }
 }
