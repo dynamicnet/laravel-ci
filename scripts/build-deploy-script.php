@@ -46,7 +46,7 @@ apply_chown($outputs);
 apply_chmod($outputs);
 
 if ("" == $APP_KEY) {
-    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} key:generate\"\n";
+    echo "ssh -ttq {$DEPLOY_USER}@{$DEPLOY_TARGET_HOST} \"{$DEPLOY_HOST_PHP_PATH} {$DEPLOY_ARTISAN_PATH} key:generate --force\"\n";
 } else {
     echo "echo '\033[38;5;226mAn APP_KEY is given in the CI/CD env var, using it \(and dont generate a new one\)\033[0m'\n";
 }
