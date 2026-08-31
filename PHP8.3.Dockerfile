@@ -1,4 +1,4 @@
-FROM php:8.3.1-cli-alpine3.19
+FROM php:8.3.33-cli-alpine3.23
 
 RUN apk update && apk add \
     nodejs \
@@ -15,7 +15,7 @@ RUN apk update && apk add \
 
 RUN install-php-extensions curl ftp fileinfo pdo_mysql mysqli openssl pdo_sqlite gd mbstring zip bcmath intl exif
 
-COPY --from=composer:2.8.10 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.10.2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /tmp
 USER root
